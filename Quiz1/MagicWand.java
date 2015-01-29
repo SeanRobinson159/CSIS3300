@@ -1,9 +1,14 @@
 /**
  * 
- * @author
+ * @author Sean Robinson
  *
  */
 public class MagicWand {
+	
+	private int maxMagicPoints;
+	private int currentMagicPoints;
+	private String brandName;
+	private String magicCore;
 
 	/**
 	 * This is the no argument constructor
@@ -15,7 +20,10 @@ public class MagicWand {
 	 * 
 	 */
 	public MagicWand(){
-		
+		maxMagicPoints = 2000;
+		currentMagicPoints = 2000;
+		brandName = "Ollivander";
+		magicCore = "Dragon heartstring";
 	}
 	
 	/**
@@ -31,7 +39,14 @@ public class MagicWand {
 	 * GOTCHAS.  If the maxMagicPoints is negative, set the limit to 0
 	 */
 	public MagicWand(int maxMagicPoints, String theBrandName){
-		
+		if(maxMagicPoints >= 0){
+			this.maxMagicPoints = maxMagicPoints;
+			this.currentMagicPoints = maxMagicPoints;
+		} else {
+			this.maxMagicPoints = 0;
+		}
+		this.brandName = theBrandName;
+		this.magicCore = "Unicorn tail hair";
 	}
 	
 	/**
@@ -40,7 +55,7 @@ public class MagicWand {
 	 * @return the number of magic points left
 	 */
 	public int getCurrentMagicCharge() {
-		return -1;
+		return currentMagicPoints;
 	}
 
 	/**
@@ -49,7 +64,7 @@ public class MagicWand {
 	 * @return the brand name of the wand
 	 */
 	public String getBrandName() {
-		return "Nothing";
+		return brandName;
 	}
 
 	/**
@@ -58,7 +73,7 @@ public class MagicWand {
 	 * @return the type of magic core in the wand
 	 */
 	public String getMagicCore() {
-		return "Nothing";
+		return magicCore;
 	}
 
 	/**
@@ -73,7 +88,10 @@ public class MagicWand {
 	 * GOTCHAS: if the numSpellPoints is negative, do not change the current number of points and just return false
 	 */
 	public boolean castSpell (int numSpellPoints){
-		return true;
+		if(numSpellPoints <= currentMagicPoints && numSpellPoints > 0){
+			return true;
+		}
+		return false;
 	}
 	
 	
@@ -82,7 +100,7 @@ public class MagicWand {
 	 * 
 	 */
 	public void rechargeWand() {
-
+		currentMagicPoints = maxMagicPoints;
 	}
 	
 
@@ -91,6 +109,9 @@ public class MagicWand {
 	 * @return true if the current wand has any magic points left, false otherwise
 	 */
 	public boolean hasCharge(){
+		if(currentMagicPoints > 0){
+			return true;
+		}
 		return false;
 	}
 	
