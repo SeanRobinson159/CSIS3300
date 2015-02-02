@@ -1,6 +1,6 @@
 /**
  * 
- * @author
+ * @author Sean Robinson
  *
  */
 public class Shelf {
@@ -52,7 +52,7 @@ public class Shelf {
 	 *         GOTCHAS: Don't crash on bad slot numbers, but return 0
 	 */
 	public int getNumberOfItemsAtSlot(int slot) {
-		if (slot >= 0) {
+		if (slot >= 0 && slot < items.length) {
 			int numItems = 0;
 			for (int i = 0; i < items[slot].length; i++) {
 				if (items[slot][i] != null) {
@@ -73,7 +73,7 @@ public class Shelf {
 	 *         GOTCHAS: Don't crash on bad slot numbers, but return 0
 	 */
 	public int getNumberOfEmptySpotsAtSlot(int slot) {
-		if (slot >= 0) {
+		if (slot >= 0 && slot < items.length) {
 			int numEmpty = 0;
 			for (int i = 0; i < items[slot].length; i++) {
 				if (items[slot][i] == null) {
@@ -100,8 +100,10 @@ public class Shelf {
 	 * 
 	 */
 	public boolean addItemToTopAtSlot(Object o, int slot) {
-		if (o != null && validateSlot(slot)) {
-
+		if (o != null && getNumberOfEmptySpotsAtSlot(slot) > 0) {
+			items[slot][validateEmptySlot(slot)] = o;
+			totalItems++;
+			return true;
 		}
 		return false;
 	}
@@ -135,15 +137,15 @@ public class Shelf {
 		return totalItems;
 	}
 
-	public boolean validateSlot(int slot) {
-		if (slot >= 0) {
+	public int validateEmptySlot(int slot) {
+		if (slot >= 0 && slot < items.length ) {
 			for (int i = 0; i < items[slot].length; i++) {
-				if (items[slot][i] != null) {
-					return true;
+				if (items[slot][i] == null) {
+					return i;
 				}
 			}
 		}
-		return false;
+		return 0;
 	}
 
 }

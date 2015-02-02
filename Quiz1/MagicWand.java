@@ -89,6 +89,7 @@ public class MagicWand {
 	 */
 	public boolean castSpell (int numSpellPoints){
 		if(numSpellPoints <= currentMagicPoints && numSpellPoints > 0){
+			currentMagicPoints -= numSpellPoints;
 			return true;
 		}
 		return false;
