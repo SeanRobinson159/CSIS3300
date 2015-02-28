@@ -23,35 +23,66 @@ public class PlayerController : MonoBehaviour {
 	}
 	
 	void Update () {
-//		if (Application.platform == RuntimePlatform.Android) {
-//			touch = Input.GetTouch(0);
-//			targetSpeed = touch.rawPosition.x * speed;
-//			if (touch.tapCount == 2) {
-//				amountToMove.y = jumpHeight;
-//			}
-//		}
+		if (Application.platform == RuntimePlatform.Android) {
+				androidTouchInput ();
+		} else {
+			if (playerPhysics.movementStopped) {
+				targetSpeed = 0;
+				currentSpeed = 0;
+			}
 
+			targetSpeed = Input.GetAxisRaw ("Horizontal") * speed;
+			currentSpeed = IncrementTowards (currentSpeed, targetSpeed, acceleration);
+
+			if (playerPhysics.grounded) {
+				amountToMove.y = 0;
+				if (Input.GetButtonDown ("Jump")) {
+					amountToMove.y = jumpHeight;
+				}
+
+			}
+
+			amountToMove.x = currentSpeed;
+			amountToMove.y -= gravity * Time.deltaTime;
+			playerPhysics.Move (amountToMove * Time.deltaTime); 
+
+		}
+	}
+
+	private void androidTouchInput(){
 		if (playerPhysics.movementStopped) {
 			targetSpeed = 0;
 			currentSpeed = 0;
 		}
 
-
-		targetSpeed = Input.GetAxisRaw ("Horizontal") * speed;
+		//Touch input
+//		if (Input.touchCount == 0) {
+//			return;
+//		}
+		touch = Input.touches[0];
+		if (touch.position.x > Screen.width / 2) {
+//			if(touch.phase == TouchPhase.Began)
+//			targetSpeed = Input.GetAxisRaw ("Horizontal") * speed;	// TODO get this fixed!
+			print("Right side");
+		} else if (touch.position.x < Screen.width / 2) {
+//			if(touch.phase == TouchPhase.Began)
+//			targetSpeed = Input.GetAxisRaw ("Horizontal") * speed;	// AND THIS
+			print("Left side");
+		} 
+		//End touch input
 		currentSpeed = IncrementTowards (currentSpeed, targetSpeed, acceleration);
-
+		
 		if (playerPhysics.grounded) {
 			amountToMove.y = 0;
-			//Jump
-			if(Input.GetButtonDown("Jump")){
+			touch = Input.GetTouch(0);
+			if(touch.tapCount == 2){
 				amountToMove.y = jumpHeight;
 			}
 		}
-
+		
 		amountToMove.x = currentSpeed;
 		amountToMove.y -= gravity * Time.deltaTime;
-		playerPhysics.Move (amountToMove * Time.deltaTime); 
-
+		playerPhysics.Move (amountToMove * Time.deltaTime);
 	}
 
 	private float IncrementTowards(float n, float target, float a){

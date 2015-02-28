@@ -10,7 +10,15 @@ public class PlayerPhysics : MonoBehaviour {
 	private BoxCollider collider;
 	private Vector3 s;
 	private Vector3 c;
-	
+
+	private Vector3 originalSize;
+	private Vector3 originalCenter;
+	private float colliderScale;
+
+	private int collisionDivisionsX = 3;
+	private int collisionDivisionsY = 3;
+
+
 	private float skin = .005f;
 	
 	[HideInInspector]
@@ -24,8 +32,11 @@ public class PlayerPhysics : MonoBehaviour {
 
 	void Start() {
 		collider = GetComponent<BoxCollider>();
-		s = collider.size;
-		c = collider.center;
+		colliderScale = transform.localScale.x;
+
+		originalSize = collider.size;
+		originalCenter = collider.center;
+		SetCollider (originalSize, originalCenter);
 	}
 	
 	public void Move(Vector2 moveAmount) {
@@ -37,9 +48,9 @@ public class PlayerPhysics : MonoBehaviour {
 		// Check collisions above and below
 		grounded = false;
 
-		for (int i = 0; i<3; i ++) {
+		for (int i = 0; i<collisionDivisionsX; i ++) {
 			float dir = Mathf.Sign(deltaY);
-			float x = (p.x + c.x - s.x/2) + s.x/2 * i; // Left, centre and then rightmost point of collider
+			float x = (p.x + c.x - s.x/2) + s.x/(collisionDivisionsX-1) * i; // Left, centre and then rightmost point of collider
 			float y = p.y + c.y + s.y/2 * dir; // Bottom of collider
 			
 			ray = new Ray(new Vector2(x,y), new Vector2(0,dir));
@@ -59,15 +70,12 @@ public class PlayerPhysics : MonoBehaviour {
 				
 			}
 		}
-
-
-
 		// Check collisions left and right
 		movementStopped = false;
-		for (int i = 0; i<3; i ++) {
+		for (int i = 0; i<collisionDivisionsY; i ++) {
 			float dir = Mathf.Sign(deltaX);
 
-			float x = p.x + c.x + s.x/2 * dir;
+			float x = p.x + c.x + s.x/(collisionDivisionsY-1) * dir;
 			float y = p.y + c.y - s.y/2 + s.y/2 * i;
 			
 			ray = new Ray(new Vector2(x,y), new Vector2(dir,0));
@@ -89,12 +97,29 @@ public class PlayerPhysics : MonoBehaviour {
 			}
 		}
 
-		Vector3 playerDir = new Vector3 (deltaX, deltaY);
-		Vector3 o = new Vector3 (p.x + c.x + s.x / 2 * Mathf.Sign (deltaX), p.y + c.y + s.y / 2 * Mathf.Sign (deltaY));
-		Debug.DrawRay (o, playerDir.normalized);
+		if (!grounded && !movementStopped) {
+			Vector3 playerDir = new Vector3 (deltaX, deltaY);
+			Vector3 o = new Vector3 (p.x + c.x + s.x / 2 * Mathf.Sign (deltaX), p.y + c.y + s.y / 2 * Mathf.Sign (deltaY));
+			ray = new Ray (o, playerDir.normalized);
+			Debug.DrawRay(o, playerDir.normalized);
+			if (Physics.Raycast (ray, Mathf.Sqrt (deltaX * deltaX + deltaY + deltaY), collisionMask)) {
+				grounded = true;
+				deltaY = 0;
+			}
+		}
 
 		Vector2 finalTransform = new Vector2(deltaX, deltaY);
 
 		transform.Translate(finalTransform);
+
 	}
+
+	public void SetCollider(Vector3 size, Vector3 center){
+		collider.size = size;
+		collider.center = center;
+
+		s = size * colliderScale;
+		c = center * colliderScale;
+	}
+
 }
