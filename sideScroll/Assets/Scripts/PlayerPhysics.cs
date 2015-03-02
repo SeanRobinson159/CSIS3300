@@ -15,8 +15,8 @@ public class PlayerPhysics : MonoBehaviour {
 	private Vector3 originalCenter;
 	private float colliderScale;
 
-	private int collisionDivisionsX = 3;
-	private int collisionDivisionsY = 3;
+	private int collisionDivisionsX = 4;
+	private int collisionDivisionsY = 4;
 
 
 	private float skin = .005f;
@@ -75,8 +75,8 @@ public class PlayerPhysics : MonoBehaviour {
 		for (int i = 0; i<collisionDivisionsY; i ++) {
 			float dir = Mathf.Sign(deltaX);
 
-			float x = p.x + c.x + s.x/(collisionDivisionsY-1) * dir;
-			float y = p.y + c.y - s.y/2 + s.y/2 * i;
+			float x = p.x + c.x + s.x/2 * dir;
+			float y = p.y + c.y - s.y/2 + s.y/(collisionDivisionsY-1) * i;
 			
 			ray = new Ray(new Vector2(x,y), new Vector2(dir,0));
 			Debug.DrawRay(ray.origin,ray.direction);
@@ -110,7 +110,7 @@ public class PlayerPhysics : MonoBehaviour {
 
 		Vector2 finalTransform = new Vector2(deltaX, deltaY);
 
-		transform.Translate(finalTransform);
+		transform.Translate(finalTransform,Space.World);
 
 	}
 
@@ -123,3 +123,11 @@ public class PlayerPhysics : MonoBehaviour {
 	}
 
 }
+
+
+
+
+
+
+
+

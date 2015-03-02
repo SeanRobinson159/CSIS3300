@@ -2,90 +2,88 @@
 using System.Collections;
 
 [RequireComponent(typeof(PlayerPhysics))]
-public class PlayerController : MonoBehaviour {
-
-	//Player Handeling
+public class PlayerController : MonoBehaviour
+{
 	public float gravity = 20;
-	public float speed = 8;
+	public float walkSpeed = 8;
+	public float runSpeed = 12;
 	public float acceleration = 30;
 	public float jumpHeight = 12;
-
+	private float animationSpeed;
 	private float currentSpeed;
 	private float targetSpeed;
 	private Vector2 amountToMove;
 	private Touch touch;
-
 	private PlayerPhysics playerPhysics;
 
-
-	void Start () {
+	void Start ()
+	{
 		playerPhysics = GetComponent<PlayerPhysics> ();
 	}
 	
-	void Update () {
-		if (Application.platform == RuntimePlatform.Android) {
-				androidTouchInput ();
-		} else {
-			if (playerPhysics.movementStopped) {
-				targetSpeed = 0;
-				currentSpeed = 0;
-			}
-
-			targetSpeed = Input.GetAxisRaw ("Horizontal") * speed;
-			currentSpeed = IncrementTowards (currentSpeed, targetSpeed, acceleration);
-
-			if (playerPhysics.grounded) {
-				amountToMove.y = 0;
-				if (Input.GetButtonDown ("Jump")) {
-					amountToMove.y = jumpHeight;
-				}
-
-			}
-
-			amountToMove.x = currentSpeed;
-			amountToMove.y -= gravity * Time.deltaTime;
-			playerPhysics.Move (amountToMove * Time.deltaTime); 
-
-		}
-	}
-
-	private void androidTouchInput(){
+	void Update ()
+	{
 		if (playerPhysics.movementStopped) {
 			targetSpeed = 0;
 			currentSpeed = 0;
 		}
 
-		//Touch input
-//		if (Input.touchCount == 0) {
-//			return;
-//		}
-		touch = Input.touches[0];
-		if (touch.position.x > Screen.width / 2) {
-//			if(touch.phase == TouchPhase.Began)
-//			targetSpeed = Input.GetAxisRaw ("Horizontal") * speed;	// TODO get this fixed!
-			print("Right side");
-		} else if (touch.position.x < Screen.width / 2) {
-//			if(touch.phase == TouchPhase.Began)
-//			targetSpeed = Input.GetAxisRaw ("Horizontal") * speed;	// AND THIS
-			print("Left side");
-		} 
-		//End touch input
-		currentSpeed = IncrementTowards (currentSpeed, targetSpeed, acceleration);
-		
-		if (playerPhysics.grounded) {
-			amountToMove.y = 0;
-			touch = Input.GetTouch(0);
-			if(touch.tapCount == 2){
-				amountToMove.y = jumpHeight;
-			}
+		if (Application.platform == RuntimePlatform.Android) {
+			androidTouchInput ();
+		} else {
+			keyboardInput ();
 		}
-		
+		currentSpeed = IncrementTowards (currentSpeed, targetSpeed, acceleration);
 		amountToMove.x = currentSpeed;
 		amountToMove.y -= gravity * Time.deltaTime;
 		playerPhysics.Move (amountToMove * Time.deltaTime);
 	}
 
-	private float IncrementTowards(float n, float target, float a){
+	private void keyboardInput ()
+	{
+		float speed = (Input.GetButton ("Run")) ? runSpeed : walkSpeed;
+		targetSpeed = Input.GetAxisRaw ("Horizontal") * speed;
+		if (playerPhysics.grounded) {
+			amountToMove.y = 0;
+			if (Input.GetButtonDown ("Jump")) {
+				amountToMove.y = jumpHeight;
+			}
+		}
+	}
+
+	private void androidTouchInput ()
+	{
+		foreach (Touch touch in Input.touches) {
+			float speed = (Input.GetButton ("Run")) ? runSpeed : walkSpeed;
+			if (touch.phase == TouchPhase.Began) {
+				if (touch.position.x > (2 * Screen.width / 3)) {	//Right Side
+					targetSpeed = speed;
+				} else if (touch.position.x < Screen.width / 3) {	//Left Side
+					targetSpeed = -speed;
+				} else if (touch.position.x > Screen.width / 3 && touch.position.x < (2 * Screen.width / 3)) {	//Middle
+					targetSpeed = 0;
+				}
+			}
+			if (touch.phase == TouchPhase.Stationary) {
+			}
+			if (touch.phase == TouchPhase.Moved) {
+			}
+			if (touch.phase == TouchPhase.Canceled) {
+			}
+			if (touch.phase == TouchPhase.Ended) {
+				targetSpeed = 0;
+			}
+			if (playerPhysics.grounded) {
+				amountToMove.y = 0;
+				if (touch.tapCount == 2) {
+					amountToMove.y = jumpHeight;
+				}
+			}
+		}
+	}
+
+	private float IncrementTowards (float n, float target, float a)
+	{
 		if (n == target) {
 			return n;
 		} else {
