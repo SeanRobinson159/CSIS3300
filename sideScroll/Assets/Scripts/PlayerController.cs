@@ -2,7 +2,7 @@
 using System.Collections;
 
 [RequireComponent(typeof(PlayerPhysics))]
-public class PlayerController : MonoBehaviour
+public class PlayerController : Entity 
 {
 	public float gravity = 20;
 	public float walkSpeed = 8;
@@ -15,10 +15,20 @@ public class PlayerController : MonoBehaviour
 	private Vector2 amountToMove;
 	private Touch touch;
 	private PlayerPhysics playerPhysics;
+	private GameManager manager;
+
+	//Swiping
+	private float fingerStartTime = 0.0f;
+	private Vector2 fingerStartPos = Vector2.zero;
+	private bool isSwipe = false;
+	private float minSwipeDist = 50.0f;
+	private float maxSwipeTime = 0.5f;
+	//End Swiping
 
 	void Start ()
 	{
 		playerPhysics = GetComponent<PlayerPhysics> ();
+		manager = Camera.main.GetComponent<GameManager> ();
 	}
 	
 	void Update ()
@@ -37,6 +47,9 @@ public class PlayerController : MonoBehaviour
 		amountToMove.x = currentSpeed;
 		amountToMove.y -= gravity * Time.deltaTime;
 		playerPhysics.Move (amountToMove * Time.deltaTime);
+		if (isDead) {
+
+		}
 	}
 
 	private void keyboardInput ()
@@ -63,6 +76,9 @@ public class PlayerController : MonoBehaviour
 				} else if (touch.position.x > Screen.width / 3 && touch.position.x < (2 * Screen.width / 3)) {	//Middle
 					targetSpeed = 0;
 				}
+				isSwipe = true;
+				fingerStartTime = Time.time;
+				fingerStartPos = touch.position;
 			}
 			if (touch.phase == TouchPhase.Stationary) {
 			}
@@ -73,12 +89,55 @@ public class PlayerController : MonoBehaviour
 			if (touch.phase == TouchPhase.Ended) {
 				targetSpeed = 0;
 			}
-			if (playerPhysics.grounded) {
-				amountToMove.y = 0;
-				if (touch.tapCount == 2) {
-					amountToMove.y = jumpHeight;
+			checkSwipe (touch, speed);
+		}
+	}
+
+	void OnTriggerEnter(Collider c){
+		if (c.tag == "Checkpoint") {
+			manager.setCheckpoint(c.transform.position);
+		}
+		if(c.tag == "Finish"){
+			manager.EndLevel();
+		}
+	}
+
+	private void checkSwipe (Touch touch, float speed)
+	{
+		float gestureTime = Time.time - fingerStartTime;
+		float gestureDist = (touch.position - fingerStartPos).magnitude;
+		
+		if (isSwipe && gestureTime < maxSwipeTime && gestureDist > minSwipeDist) {
+			Vector2 direction = touch.position - fingerStartPos;
+			Vector2 swipeType = Vector2.zero;
+			
+			if (Mathf.Abs (direction.x) > Mathf.Abs (direction.y)) {
+				// the swipe is horizontal:
+				swipeType = Vector2.right * Mathf.Sign (direction.x);
+			} else {
+				// the swipe is vertical:
+				swipeType = Vector2.up * Mathf.Sign (direction.y);
+			}
+			
+			if (swipeType.x != 0.0f) {
+				if (swipeType.x > 0.0f) {
+					// MOVE RIGHT
+				} else {
+					// MOVE LEFT
 				}
 			}
+			if (playerPhysics.grounded) {
+				amountToMove.y = 0;
+				if (swipeType.y != 0.0f) {
+					if (swipeType.y > 0.0f) {
+						amountToMove.y = jumpHeight;
+						isSwipe = false;
+					}
+				} else {
+					// MOVE DOWN
+				}
+			}
+			
 		}
 	}
 
